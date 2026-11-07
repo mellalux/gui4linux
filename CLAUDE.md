@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-    make                 # build/lumen (compositor), build/lumen-term, build/lumen-calc, build/lumen-run, build/lumen-settings
-    make run             # build + start lumen on a real VT (EXEC=, TIMEOUT=, HEADLESS=1)
-    make asan            # build/lumen-asan (ASan + UBSan)
+    make                 # build/mellagui (compositor), build/mellagui-term, build/mellagui-calc, build/mellagui-run, build/mellagui-settings
+    make run             # build + start mellagui on a real VT (EXEC=, TIMEOUT=, HEADLESS=1)
+    make asan            # build/mellagui-asan (ASan + UBSan)
     build/keymap-test    # layout tables / keymap generator unit test (also run by tests/run.sh)
-    tests/run.sh         # all end-to-end tests (needs a built build/lumen; plus lumen-term etc. for TestClients)
-    LUMEN_BIN=build/lumen-asan tests/run.sh      # same under the sanitizers (exit code 77 / "Sanitizer" in output = failure)
-    python3 -I tests/test_lumen.py TestWindows.test_move_with_titlebar     # a single test
-    build/lumen --backend headless --size 1024x600 --socket t0 --control /tmp/ctl      # manual headless run
+    tests/run.sh         # all end-to-end tests (needs a built build/mellagui; plus mellagui-term etc. for TestClients)
+    MELLAGUI_BIN=build/mellagui-asan tests/run.sh      # same under the sanitizers (exit code 77 / "Sanitizer" in output = failure)
+    python3 -I tests/test_mellagui.py TestWindows.test_move_with_titlebar     # a single test
+    build/mellagui --backend headless --size 1024x600 --socket t0 --control /tmp/ctl      # manual headless run
     python3 tools/ppm2png.py frame.ppm frame.png                  # to look at a `dump` from the control socket
 
 Only gcc, make, pkg-config and the libdrm headers exist on the dev machine (no libwayland, xkbcommon, libinput,
@@ -30,14 +30,14 @@ Data flow:
   role's `damage` hook → `xdg.c` forwards to `lm_wm_surface_damage` → `render.c` accumulates per-output damage →
   `backend_*.c` `get_framebuffer`/`present` → `output_ready` (page-flip event or 60 Hz timer) → frame callbacks.
 * **windows**: `xdg.c` is only a protocol adapter; all policy (placement, focus, maximize, move/resize grabs, workspaces,
-  decorations geometry, panel layout, the "Lumen" app menu (`config.apps`, `--app`), shortcuts) lives in `wm.c`, which also exposes the scene (`lm_wm_scene_for_each`)
+  decorations geometry, panel layout, the "Mellagui" app menu (`config.apps`, `--app`), shortcuts) lives in `wm.c`, which also exposes the scene (`lm_wm_scene_for_each`)
   that `render.c` paints bottom-to-top. The wm talks back to clients only through `struct lm_window_ops`.
 * **request dispatch** (`server.c`): object table per client, handlers get already-validated/resolved args; protocol
   violations → `wl_display.error` + disconnect. Interface signature tables are hand-written in `protocol.c`
   (opcodes are named in `protocol.h`); `wire.c` is shared with the clients.
 * **backends**: `backend_drm.c` (legacy KMS, two dumb buffers + a cached shadow frame, uevent-driven hotplug, VT_PROCESS switching, restores console on every exit path —
   never tested on hardware) and `backend_headless.c` (memory framebuffer + line-based control socket used by all tests).
-* **clients**: `lumen-run.c` is the Run dialog (Super+R / panel *Run* button, `--run CMD`; `--selftest`); `client/wlc.[ch]` is a tiny client library on top of `wire.c`/`protocol.c`, `client/wlwin.[ch]` a one-window software-drawn xdg-toplevel layer on top of it (registry, shm buffer, keymap/modifiers, fill/text helpers) shared by calc, run and settings; `lumen-calc.c` is a calculator (engine + UI, `--selftest`); `lumen-settings.c` is the settings panel (talks to the private `lumen_settings_v1` global of `src/settings.c`; values persist in `~/.config/lumen/settings.conf`, headless only with `--settings FILE`; `--get`/`--set`/`--selftest`); `lumen-monitor.c` is the monitor's own settings panel (brightness, contrast, volume/mute, input, colour preset, standby over DDC/CI via `src/ddc.c` on `/dev/i2c-N`, the bus found through `/sys/class/drm/*/ddc`; a laptop panel's `/sys/class/backlight`; `--list`/`--set NAME HEXCODE VALUE`; env `LUMEN_MONITOR_FAKE=FILE` replaces the hardware in tests; opened from the Display page of the settings and the "Monitor" menu entry); `lumen-term.c` is a VT emulator (button bar Paste / A- / A+; Ctrl +/-/0 and Ctrl+wheel zoom the font 1x..4x)
+* **clients**: `mellagui-run.c` is the Run dialog (Super+R / panel *Run* button, `--run CMD`; `--selftest`); `client/wlc.[ch]` is a tiny client library on top of `wire.c`/`protocol.c`, `client/wlwin.[ch]` a one-window software-drawn xdg-toplevel layer on top of it (registry, shm buffer, keymap/modifiers, fill/text helpers) shared by calc, run and settings; `mellagui-calc.c` is a calculator (engine + UI, `--selftest`); `mellagui-settings.c` is the settings panel (talks to the private `mellagui_settings_v1` global of `src/settings.c`; values persist in `~/.config/mellagui/settings.conf`, headless only with `--settings FILE`; `--get`/`--set`/`--selftest`); `mellagui-monitor.c` is the monitor's own settings panel (brightness, contrast, volume/mute, input, colour preset, standby over DDC/CI via `src/ddc.c` on `/dev/i2c-N`, the bus found through `/sys/class/drm/*/ddc`; a laptop panel's `/sys/class/backlight`; `--list`/`--set NAME HEXCODE VALUE`; env `MELLAGUI_MONITOR_FAKE=FILE` replaces the hardware in tests; opened from the Display page of the settings and the "Monitor" menu entry); `mellagui-term.c` is a VT emulator (button bar Paste / A- / A+; Ctrl +/-/0 and Ctrl+wheel zoom the font 1x..4x)
   (pty, parser, scrollback, selection/clipboard); `src/font.c` + `src/font_data.h` (generated by `tools/gen_font.py`
   from `/usr/share/consolefonts/Uni2-Terminus16.psf.gz`) and `src/keymap.c` (layout tables → generated XKB keymap + client keysym lookup; `--layouts`, Super+Space, sticky keys live in `input_evdev.c`) are shared with clients.
 
@@ -45,7 +45,7 @@ Gotchas:
 * wm coordinates: `lm_window.{x,y,width,height}` is the *window geometry* (client area); the frame is drawn around it
   (see `wm.h`). Workspaces are 0-based in the control socket output.
 * Sub-surface position and `set_window_geometry` take effect on the *parent's* commit (protocol-correct; tests rely on it).
-* The headless backend's `windows`/`dump`/`sync` commands are the test oracle; add a test in `tests/test_lumen.py`
+* The headless backend's `windows`/`dump`/`sync` commands are the test oracle; add a test in `tests/test_mellagui.py`
   (helpers: `Window`, `Ctl`, `Ppm` in `tests/wlclient.py`) when changing behaviour.
 * The XKB keymap text is generated (`lm_keymap_build`) and cannot be compiled here (no libxkbcommon): real xkbcommon clients (VS Code) are the only way to verify it.
 * Devices are opened with plain `open(2)`; logind is not implemented, so real-hardware runs need groups `video`+`input`.
