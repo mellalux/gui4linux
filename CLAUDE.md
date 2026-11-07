@@ -30,7 +30,7 @@ Data flow:
   role's `damage` hook → `xdg.c` forwards to `lm_wm_surface_damage` → `render.c` accumulates per-output damage →
   `backend_*.c` `get_framebuffer`/`present` → `output_ready` (page-flip event or 60 Hz timer) → frame callbacks.
 * **windows**: `xdg.c` is only a protocol adapter; all policy (placement, focus, maximize, move/resize grabs, workspaces,
-  decorations geometry, panel layout, the "Mellagui" app menu (`config.apps`, `--app`), shortcuts) lives in `wm.c`, which also exposes the scene (`lm_wm_scene_for_each`)
+  decorations geometry, panel layout, the "MellaGUI" app menu (`config.apps`, `--app`), shortcuts) lives in `wm.c`, which also exposes the scene (`lm_wm_scene_for_each`)
   that `render.c` paints bottom-to-top. The wm talks back to clients only through `struct lm_window_ops`.
 * **request dispatch** (`server.c`): object table per client, handlers get already-validated/resolved args; protocol
   violations → `wl_display.error` + disconnect. Interface signature tables are hand-written in `protocol.c`
