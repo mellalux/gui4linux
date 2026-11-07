@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
     make                 # build/mellagui (compositor), build/mellagui-term, build/mellagui-calc, build/mellagui-run, build/mellagui-settings
     make run             # build + start mellagui on a real VT (EXEC=, TIMEOUT=, HEADLESS=1)
     make asan            # build/mellagui-asan (ASan + UBSan)
+    make fuzz-run        # coverage-guided fuzzer of the whole compositor, FUZZ_TIME=60 s (tests/fuzz_server.c, see docs/FUZZING.md)
     build/keymap-test    # layout tables / keymap generator unit test (also run by tests/run.sh)
     tests/run.sh         # all end-to-end tests (needs a built build/mellagui; plus mellagui-term etc. for TestClients)
     MELLAGUI_BIN=build/mellagui-asan tests/run.sh      # same under the sanitizers (exit code 77 / "Sanitizer" in output = failure)
