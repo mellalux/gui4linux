@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-    make                 # build/lumen (compositor), build/lumen-demo, build/lumen-term, build/lumen-calc, build/lumen-run, build/lumen-settings
+    make                 # build/lumen (compositor), build/lumen-term, build/lumen-calc, build/lumen-run, build/lumen-settings
     make run             # build + start lumen on a real VT (EXEC=, TIMEOUT=, HEADLESS=1)
     make asan            # build/lumen-asan (ASan + UBSan)
     build/keymap-test    # layout tables / keymap generator unit test (also run by tests/run.sh)
-    tests/run.sh         # all end-to-end tests (needs a built build/lumen; plus lumen-demo/-term for TestClients)
+    tests/run.sh         # all end-to-end tests (needs a built build/lumen; plus lumen-term etc. for TestClients)
     LUMEN_BIN=build/lumen-asan tests/run.sh      # same under the sanitizers (exit code 77 / "Sanitizer" in output = failure)
     python3 -I tests/test_lumen.py TestWindows.test_move_with_titlebar     # a single test
     build/lumen --backend headless --size 1024x600 --socket t0 --control /tmp/ctl      # manual headless run
