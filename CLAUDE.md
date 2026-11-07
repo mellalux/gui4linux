@@ -48,4 +48,4 @@ Gotchas:
 * The headless backend's `windows`/`dump`/`sync` commands are the test oracle; add a test in `tests/test_lumen.py`
   (helpers: `Window`, `Ctl`, `Ppm` in `tests/wlclient.py`) when changing behaviour.
 * The XKB keymap text is generated (`lm_keymap_build`) and cannot be compiled here (no libxkbcommon): real xkbcommon clients (VS Code) are the only way to verify it.
-* `lm_seatdev` only does direct `open(2)`; logind is not implemented, so real-hardware runs need groups `video`+`input`.
+* Devices are opened with plain `open(2)`; logind is not implemented, so real-hardware runs need groups `video`+`input`.
